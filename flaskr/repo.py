@@ -10,10 +10,10 @@ class ImgRepo:
         self._category_cache = self._create_category_mapping()
 
     def categories(self):
-        return list(self._category_cache.keys())
+        return sorted(list(self._category_cache.keys()))
 
     def files_in_category(self, category: str):
-        return self._category_cache[category]
+        return sorted(self._category_cache[category])
 
     @staticmethod
     def _create_category_mapping(rel_to_static_path: str = f"images"):
@@ -29,8 +29,16 @@ class ImgRepo:
 
         mapped = map(ImgRepo._map_filename, files)
 
-        grouped = {t[0]: list(map(lambda x: x['filename'], t[1])) for t in
-                   itertools.groupby(mapped, key=lambda x: x['category'])}
+        grouped = {}
+
+        for m in mapped:
+            category = m['category']
+            filename = m['filename']
+
+            if grouped.get(category, None):
+                grouped.get(category).append(filename)
+            else:
+                grouped.update({category: list([filename])})
 
         return grouped
 
